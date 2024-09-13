@@ -1,7 +1,21 @@
 import p5 from "p5";
 
+// import types
+import { rayHitPoint, cellValueRange } from "../types";
+
 // import constants
-import { GRID, MAP_SIZE, TILE_SIZE, PLAYER } from "../constants";
+import {
+  GRID,
+  MAP_SIZE,
+  TILE_SIZE,
+  PLAYER,
+  CELL_COLOR,
+  RAYS,
+  START_ANGLE,
+  ANGLE_STEP,
+} from "../constants";
+
+export let rayHitPoints: rayHitPoint[] = [];
 
 export function sketchMap(p: p5) {
   // helper functions for drawing grid , casting rays and all
@@ -106,6 +120,154 @@ export function sketchMap(p: p5) {
     }
   }
 
+  function exceed(x: number, y: number) {
+    // if not in this range then return true
+    if (!(x < GRID.length && y < GRID.length && x >= 0 && y >= 0)) {
+      return true;
+    }
+    return false;
+  }
+
+  function castRay(angle: number) {
+    let ang = PLAYER.angle + angle;
+    let px = PLAYER.x;
+    let py = PLAYER.y;
+
+    // directions
+    const UP = p.cos(ang) >= 0 ? true : false;
+    const LEFT = p.sin(ang) < 0 ? true : false;
+
+    // tackling horizontal now
+    let nearY = UP
+      ? Math.floor(py / TILE_SIZE) * TILE_SIZE
+      : (Math.floor(py / TILE_SIZE) + 1) * TILE_SIZE;
+    let nearX = LEFT
+      ? Math.floor(px / TILE_SIZE) * TILE_SIZE
+      : (Math.floor(px / TILE_SIZE) + 1) * TILE_SIZE;
+
+    // nearest y ( always + )
+    // nearest x ( + or - )
+    let hny = UP ? py - nearY : nearY - py;
+    // tan(0) = x/y , p/b
+    let hnx = p.tan(ang) * hny;
+
+    let vnx = LEFT ? px - nearX : nearX - px;
+    let vny = vnx / p.tan(ang);
+
+    // temp vars that will hold the end points of the ray
+    let hey = UP ? py - hny : py + hny;
+    let hex = UP ? px + hnx : px - hnx;
+
+    let vex = LEFT ? px - vnx : px + vnx;
+    let vey = LEFT ? py + vny : py - vny;
+
+    let hstepy = TILE_SIZE;
+    let hstepx = p.tan(ang) * hstepy;
+
+    let vstepx = TILE_SIZE;
+    let vstepy = vstepx / p.tan(ang);
+
+    let horizontalRayHitData: rayHitPoint = {
+      distance: 0,
+      face: undefined,
+      hitaxis: "horizontal",
+      cellValue: undefined,
+      angle: angle,
+      cell: { x: -1, y: -1 },
+      color: "white",
+    };
+
+    let verticalRayHitData: rayHitPoint = {
+      distance: 0,
+      face: undefined,
+      hitaxis: "vertical",
+      cellValue: undefined,
+      angle: angle,
+      cell: { x: -1, y: -1 },
+      color: "white",
+    };
+    // horizonal
+    while (true) {
+      let celly = UP
+        ? Math.floor(hey / TILE_SIZE) - 1
+        : Math.floor(hey / TILE_SIZE);
+      let cellx = Math.floor(hex / TILE_SIZE);
+
+      if (exceed(cellx, celly)) break;
+      if (GRID[celly][cellx] > 0) {
+        horizontalRayHitData = {
+          ...horizontalRayHitData,
+          face: UP ? "bottom" : "top",
+          cellValue: GRID[celly][cellx] as cellValueRange,
+          cell: { x: cellx, y: celly },
+          color: CELL_COLOR[GRID[celly][cellx] as cellValueRange],
+        };
+
+        break;
+      }
+
+      hey += UP ? -hstepy : +hstepy;
+      hex += UP ? hstepx : -hstepx;
+    }
+
+    while (true) {
+      let cellx = LEFT
+        ? Math.floor(vex / TILE_SIZE) - 1
+        : Math.floor(vex / TILE_SIZE);
+      let celly = Math.floor(vey / TILE_SIZE);
+      if (exceed(cellx, celly)) break;
+      if (GRID[celly][cellx] > 0) {
+        verticalRayHitData = {
+          ...verticalRayHitData,
+          face: LEFT ? "right" : "left",
+          cellValue: GRID[celly][cellx] as cellValueRange,
+          cell: { x: cellx, y: celly },
+          color: CELL_COLOR[GRID[celly][cellx] as cellValueRange],
+        };
+
+        break;
+      }
+
+      vex += LEFT ? -vstepx : vstepx;
+      vey += LEFT ? vstepy : -vstepy;
+    }
+
+    let horizontalDistance = Math.sqrt(
+      Math.pow(hex - px, 2) + Math.pow(hey - py, 2)
+    );
+    let verticalDistance = Math.sqrt(
+      Math.pow(vex - px, 2) + Math.pow(vey - py, 2)
+    );
+
+    horizontalRayHitData = {
+      ...horizontalRayHitData,
+      distance: horizontalDistance,
+    };
+    verticalRayHitData = {
+      ...verticalRayHitData,
+      distance: verticalDistance,
+    };
+
+    // let minDistance = horizontal;
+
+    p.push();
+
+    // p.line(playerPos.current.x, playerPos.current.y, hex, hey);
+    p.strokeWeight(1);
+    p.stroke("cyan");
+    if (horizontalDistance < verticalDistance) {
+      rayHitPoints.push(horizontalRayHitData);
+      p.stroke(horizontalRayHitData.color);
+      p.line(PLAYER.x, PLAYER.y, hex, hey);
+    } else {
+      rayHitPoints.push(verticalRayHitData);
+      p.stroke(verticalRayHitData.color);
+      p.line(PLAYER.x, PLAYER.y, vex, vey);
+    }
+
+    p.pop();
+  }
+
   p.setup = () => {
     p.createCanvas(MAP_SIZE, MAP_SIZE);
     p.angleMode("degrees");
@@ -117,5 +279,10 @@ export function sketchMap(p: p5) {
     drawGrid();
     drawPlayer();
     playerControls();
+
+    rayHitPoints = [];
+    for (let i = 0; i < RAYS; i++) {
+      castRay(START_ANGLE + ANGLE_STEP * i);
+    }
   };
 }
