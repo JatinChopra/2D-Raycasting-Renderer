@@ -1,5 +1,3 @@
-import { rayHitPoint } from "./types";
-
 // fov and angles
 export const RAYS = 180;
 export const FOV = 75;

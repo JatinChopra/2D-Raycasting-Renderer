@@ -278,6 +278,7 @@ export function sketchMap(p: p5) {
 
   p.setup = () => {
     p.createCanvas(MAP_SIZE, MAP_SIZE);
+
     p.angleMode("degrees");
   };
 
