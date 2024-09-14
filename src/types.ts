@@ -8,3 +8,13 @@ export type rayHitPoint = {
   cell: { x: number; y: number };
   color: string;
 };
+
+export type npc = {
+  health: number;
+  x: number;
+  y: number;
+  ang: number;
+  start: number;
+  end: number;
+  movement: number;
+};

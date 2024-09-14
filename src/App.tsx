@@ -23,8 +23,8 @@ function App() {
   return (
     <>
       <div className="h-[100vh] bg-gray-200 flex justify-center items-center">
-        <div ref={sceneRef}></div>
         <div ref={mapRef}></div>
+        <div ref={sceneRef}></div>
       </div>
     </>
   );
