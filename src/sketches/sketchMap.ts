@@ -17,6 +17,7 @@ import {
 
 export let rayHitPoints: rayHitPoint[] = [];
 
+let wallTextures: p5.Image[] = [];
 export function sketchMap(p: p5) {
   // helper functions for drawing grid , casting rays and all
 
@@ -26,7 +27,13 @@ export function sketchMap(p: p5) {
         p.stroke(255);
         p.noFill();
         if (GRID[row][col] > 0) {
-          p.fill("gray");
+          p.image(
+            wallTextures[GRID[row][col]],
+            col * TILE_SIZE,
+            row * TILE_SIZE,
+            TILE_SIZE,
+            TILE_SIZE
+          );
         }
         p.square(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE);
       }
@@ -254,14 +261,15 @@ export function sketchMap(p: p5) {
 
     // p.line(playerPos.current.x, playerPos.current.y, hex, hey);
     p.strokeWeight(1);
-    p.stroke("cyan");
     if (horizontalDistance < verticalDistance) {
       rayHitPoints.push(horizontalRayHitData);
-      p.stroke(horizontalRayHitData.color);
+      // p.stroke(horizontalRayHitData.color);
+      p.stroke("cyan");
       p.line(PLAYER.x, PLAYER.y, hex, hey);
     } else {
       rayHitPoints.push(verticalRayHitData);
-      p.stroke(verticalRayHitData.color);
+      // p.stroke(verticalRayHitData.color);
+      p.stroke("cyan");
       p.line(PLAYER.x, PLAYER.y, vex, vey);
     }
 
@@ -271,6 +279,12 @@ export function sketchMap(p: p5) {
   p.setup = () => {
     p.createCanvas(MAP_SIZE, MAP_SIZE);
     p.angleMode("degrees");
+  };
+
+  p.preload = () => {
+    for (let i = 1; i <= 10; i++) {
+      wallTextures[i] = p.loadImage(`/wallTexture/w_${i}.jpg`);
+    }
   };
 
   p.draw = () => {

@@ -12,14 +12,7 @@ let npc: npc[] = [
   { x: 120, y: 60, ang: 0, health: 10, start: 140, end: 160, movement: 1 },
 ];
 
-// Gun animation variables
-let gunCurrentFrame = 0;
-let gunTotalFrames = 4;
-let gunIsAnimating = false;
-let gunAnimationStartTime = 0;
-const gunFrameDuration = 100; // ms
-
-let wallTxt1: p5.Image;
+let wallTextures: p5.Image[] = [];
 let demonSprites: p5.Image[] = [];
 let gunSprites: p5.Image[] = [];
 
@@ -126,6 +119,10 @@ function drawWalls(p: p5) {
 
   // go over all rays and draw strips that makes up the wall
   for (let i = 0; i < rayHitPoints.length; i++) {
+    let wallTxt =
+      wallTextures[
+        rayHitPoints[i].cellValue as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
+      ];
     zdepth.push(rayHitPoints[i].distance);
     // we want the distance as if player was standing directly infront of the ray hit point on the wall
     let correctedDistance =
@@ -155,7 +152,7 @@ function drawWalls(p: p5) {
         p.sin(rayHitPoints[i].angle + PLAYER.angle) * rayHitPoints[i].distance;
       let x = PLAYER.x + xc;
       let xo = x - rayHitPoints[i].cell.x * TILE_SIZE;
-      textX = (xo / TILE_SIZE) * wallTxt1.width;
+      textX = (xo / TILE_SIZE) * wallTxt.width;
     }
 
     if (rayHitPoints[i].hitaxis == "vertical") {
@@ -163,12 +160,12 @@ function drawWalls(p: p5) {
         p.cos(rayHitPoints[i].angle + PLAYER.angle) * rayHitPoints[i].distance;
       let y = PLAYER.y - yc;
       let yo = y - rayHitPoints[i].cell.y * TILE_SIZE;
-      textX = (yo / TILE_SIZE) * wallTxt1.width;
+      textX = (yo / TILE_SIZE) * wallTxt.width;
     }
 
     // apply texture image
     p.image(
-      wallTxt1,
+      wallTxt,
       // x and y for the strip
       i * STRIP_WIDTH,
       wallCenter,
@@ -180,7 +177,7 @@ function drawWalls(p: p5) {
       0,
       // width and height of txt to be samples
       0.01,
-      wallTxt1.height
+      wallTxt.height
     );
 
     // fill the color and make the rectangle
@@ -191,13 +188,22 @@ function drawWalls(p: p5) {
 }
 
 export function sketchScene(p: p5) {
+  // Gun animation variables
+  let gunCurrentFrame = 0;
+  let gunTotalFrames = 4;
+  let gunIsAnimating = false;
+  let gunAnimationStartTime = 0;
+  const gunFrameDuration = 100; // ms
+
   p.setup = () => {
     p.createCanvas(SCENE_SIZE, SCENE_SIZE);
     p.angleMode("degrees");
   };
 
   p.preload = () => {
-    wallTxt1 = p.loadImage("/wallTexture/wall_1.jpg");
+    for (let i = 1; i <= 10; i++) {
+      wallTextures[i] = p.loadImage(`/wallTexture/w_${i}.jpg`);
+    }
     // load flying demon sprites
     for (let i = 0; i < 4; i++) {
       demonSprites[i] = p.loadImage(`/enemy/flyingDemon/IDLE_${i}.png`); // Adjust index for 0-based array
@@ -210,6 +216,7 @@ export function sketchScene(p: p5) {
 
   p.keyPressed = () => {
     if (p.keyCode === 32 && !gunIsAnimating) {
+      console.log("Shoot");
       // 32 is the keyCode for spacebar
       // Create a new Audio object and play it
       const shootSound = new Audio("/gun/shoot.wav");
@@ -230,12 +237,20 @@ export function sketchScene(p: p5) {
     }
   };
 
+  function drawskyandfloor() {
+    p.push();
+    p.fill(0);
+    p.rect(0, 0, p.width, p.height / 2);
+    p.fill(255);
+    p.rect(0, p.height / 2, p.width, p.height / 2);
+    p.pop();
+  }
+
   p.draw = () => {
     p.background(255);
 
-    p.fill("gray");
-    p.rect(0, p.height / 2, p.width, p.height / 2);
-
+    drawskyandfloor();
+    // sky
     drawWalls(p);
 
     // draw sprites afer wall
