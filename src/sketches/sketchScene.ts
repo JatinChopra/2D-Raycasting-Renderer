@@ -12,6 +12,8 @@ import {
 import { rayHitPoints } from "./sketchMap";
 import { texture } from "../App";
 
+// import { bot } from "./sketchMap";
+
 let corrected: number[] = [];
 let zdepth: number[] = [];
 export let npc = generateRandomEnemies(10);

@@ -21,7 +21,7 @@ import {
 import { npc } from "./sketchScene";
 
 export let rayHitPoints: rayHitPoint[] = [];
-let bot = new SmartNPC(100, 75, 57, 0);
+export let bot = new SmartNPC(100, 75, 57, 0);
 
 let wallTextures: p5.Image[] = [];
 export function sketchMap(p: p5) {
@@ -118,14 +118,12 @@ export function sketchMap(p: p5) {
     let yc = p.cos(PLAYER.angle) * PLAYER.speed;
 
     if (p.keyIsDown(87)) {
-      bot.distance = 0;
       // w
       px += xc;
       py -= yc;
     }
 
     if (p.keyIsDown(83)) {
-      bot.distance = 0;
       // s
       px -= xc;
       py += yc;
@@ -149,13 +147,11 @@ export function sketchMap(p: p5) {
     }
 
     if (p.keyIsDown(68)) {
-      bot.distance = 0;
       // d
       PLAYER.angle += PLAYER.angleSpeed;
     }
 
     if (p.keyIsDown(65)) {
-      bot.distance = 0;
       // a
       PLAYER.angle -= PLAYER.angleSpeed;
     }
@@ -328,7 +324,6 @@ export function sketchMap(p: p5) {
     drawGrid();
     drawPlayer();
     drawNpcs();
-    // drawBot();
     // bot.castRay(p);
     playerControls();
 
@@ -336,5 +331,7 @@ export function sketchMap(p: p5) {
     for (let i = 0; i < RAYS; i++) {
       castRay(START_ANGLE + ANGLE_STEP * i);
     }
+
+    // drawBot();
   };
 }

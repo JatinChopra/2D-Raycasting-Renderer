@@ -1,5 +1,5 @@
 import p5 from "p5";
-import { GRID, PLAYER, TILE_SIZE } from "./constants";
+import { PLAYER, TILE_SIZE } from "./constants";
 export class SmartNPC {
   health: number;
   x: number;
@@ -29,28 +29,16 @@ export class SmartNPC {
     let xc = p.sin(ang);
     let yc = p.cos(ang);
 
-    let rex = this.distance * xc;
-    let rey = this.distance * -yc;
+    console.log(TILE_SIZE);
 
-    if (this.distance > 1000) {
-      this.distance = 0;
-    }
+    let playercellx = Math.floor(PLAYER.x / TILE_SIZE);
+    let playercelly = Math.floor(PLAYER.y / TILE_SIZE);
+    console.log(playercellx, playercelly);
 
-    let cellx = Math.floor(rex / TILE_SIZE);
-    let celly = Math.floor(rey / TILE_SIZE);
-    console.log(celly, cellx);
-    if (GRID[celly][cellx] > 0) {
-      this.distance += 0.1;
-    }
+    this.x += xc * 0.4;
+    this.y += -yc * 0.4;
 
     this.ang = ang;
     console.log("bot > ", ang);
-
-    p.push();
-    p.strokeWeight(5);
-    p.stroke("red");
-    p.translate(this.x, this.y);
-    p.line(0, 0, rex, rey);
-    p.pop();
   }
 }
