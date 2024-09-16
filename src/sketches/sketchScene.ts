@@ -317,14 +317,14 @@ export function sketchScene(p: p5) {
     }
   }
 
-  function drawskyandfloor() {
-    p.push();
-    p.fill(0);
-    p.rect(0, 0, p.width, p.height / 2);
-    p.fill(255);
-    p.rect(0, p.height / 2, p.width, p.height / 2);
-    p.pop();
-  }
+  // function drawskyandfloor() {
+  //   p.push();
+  //   p.fill(0);
+  //   p.rect(0, 0, p.width, p.height / 2);
+  //   p.fill(255);
+  //   p.rect(0, p.height / 2, p.width, p.height / 2);
+  //   p.pop();
+  // }
 
   // p.windowResized = () => {
   //   let width = window.innerWidth * 0.9;

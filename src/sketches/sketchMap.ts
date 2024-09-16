@@ -46,18 +46,18 @@ export function sketchMap(p: p5) {
     }
   }
 
-  function drawBot() {
-    p.push();
-    p.fill("green");
-    p.strokeWeight(5);
-    p.fill("red");
-    p.translate(bot.x, bot.y);
+  // function drawBot() {
+  //   p.push();
+  //   p.fill("green");
+  //   p.strokeWeight(5);
+  //   p.fill("red");
+  //   p.translate(bot.x, bot.y);
 
-    p.rectMode("center");
-    p.rotate(bot.ang);
-    p.square(0, 0, TILE_SIZE * 0.4);
-    p.pop();
-  }
+  //   p.rectMode("center");
+  //   p.rotate(bot.ang);
+  //   p.square(0, 0, TILE_SIZE * 0.4);
+  //   p.pop();
+  // }
 
   function drawPlayer() {
     p.push();
@@ -168,8 +168,6 @@ export function sketchMap(p: p5) {
     }
     return false;
   }
-
-  function castRayNpc() {}
 
   function castRay(angle: number) {
     let ang = PLAYER.angle + angle;
