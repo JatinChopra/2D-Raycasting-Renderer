@@ -39,18 +39,45 @@ export const CELL_COLOR = {
   10: "blue",
 };
 
+const { x, y } = getPlayerStartPosition(GRID);
+
 // player
 export const PLAYER = {
   size: TILE_SIZE * 0.2,
   color: "RED",
-  x: TILE_SIZE * 1.5,
-  y: MAP_SIZE - TILE_SIZE * 1.5,
+  x: x,
+  y: y,
   angle: 0, // degrees
   speed: MAP_SIZE * (2.4 / 800),
-  angleSpeed: 5,
-  dir: { x: 1, y: 0 }, // Direction vector
-  plane: { x: 0, y: 0.66 }, // Camera plane
+  angleSpeed: 2.5,
 };
+
 // scene map
-export const SCENE_SIZE = 800;
-export const STRIP_WIDTH = SCENE_SIZE / RAYS;
+
+export let SCENE_SIZE = 800;
+export let STRIP_WIDTH = SCENE_SIZE / RAYS;
+
+function getPlayerStartPosition(grid: number[][]): { x: number; y: number } {
+  const height = grid.length;
+  const width = grid[0].length;
+
+  const startLeft = Math.random() < 0.5;
+
+  let x: number, y: number;
+
+  for (y = height - 2; y >= 0; y--) {
+    x = startLeft ? 1 : width - 2;
+
+    if (grid[y][x] === 0) {
+      return {
+        x: (x + 0.5) * TILE_SIZE,
+        y: (y + 0.5) * TILE_SIZE,
+      };
+    }
+  }
+
+  return {
+    x: startLeft ? 1.5 * TILE_SIZE : (width - 1.5) * TILE_SIZE,
+    y: (height - 1.5) * TILE_SIZE,
+  };
+}

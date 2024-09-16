@@ -1,20 +1,63 @@
 import p5 from "p5";
 
-import type { npc } from "../types";
-import { FOV, PLAYER, SCENE_SIZE, STRIP_WIDTH, TILE_SIZE } from "../constants";
+import type { npc as npcType } from "../types";
+import {
+  FOV,
+  PLAYER,
+  SCENE_SIZE,
+  STRIP_WIDTH,
+  TILE_SIZE,
+  GRID,
+} from "../constants";
 import { rayHitPoints } from "./sketchMap";
+import { texture } from "../App";
 
 let corrected: number[] = [];
 let zdepth: number[] = [];
-let npc: npc[] = [
-  { x: 100, y: 60, ang: 0, health: 10, start: 70, end: 130, movement: 1 },
-  { x: 70, y: 60, ang: 0, health: 10, start: 20, end: 70, movement: 1 },
-  { x: 120, y: 60, ang: 0, health: 10, start: 140, end: 160, movement: 1 },
-];
+export let npc = generateRandomEnemies(10);
 
 let wallTextures: p5.Image[] = [];
 let demonSprites: p5.Image[] = [];
 let gunSprites: p5.Image[] = [];
+
+function generateRandomEnemies(count: number): npcType[] {
+  const enemies: npcType[] = [];
+  const emptyCells: { x: number; y: number }[] = [];
+
+  // Find all empty cells
+  for (let y = 0; y < GRID.length; y++) {
+    for (let x = 0; x < GRID[y].length; x++) {
+      if (GRID[y][x] === 0) {
+        emptyCells.push({ x, y });
+      }
+    }
+  }
+
+  // Shuffle the empty cells array
+  for (let i = emptyCells.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [emptyCells[i], emptyCells[j]] = [emptyCells[j], emptyCells[i]];
+  }
+
+  // Generate enemies
+  for (let i = 0; i < Math.min(count, emptyCells.length); i++) {
+    const cell = emptyCells[i];
+    const x = (cell.x + 0.5) * TILE_SIZE; // Center of the cell
+    const y = (cell.y + 0.5) * TILE_SIZE; // Center of the cell
+
+    enemies.push({
+      x,
+      y,
+      ang: Math.random() * 360, // Random angle
+      health: 10,
+      start: x - TILE_SIZE * 2, // Example movement range
+      end: x + TILE_SIZE * 2,
+      movement: 1,
+    });
+  }
+
+  return enemies;
+}
 
 function billboardSprites(
   p: p5,
@@ -163,27 +206,29 @@ function drawWalls(p: p5) {
       textX = (yo / TILE_SIZE) * wallTxt.width;
     }
 
-    // apply texture image
-    p.image(
-      wallTxt,
-      // x and y for the strip
-      i * STRIP_WIDTH,
-      wallCenter,
-      // width , height of texture to be applied
-      STRIP_WIDTH + 1,
-      height,
-      // x , y coordinates in texture image
-      textX,
-      0,
-      // width and height of txt to be samples
-      0.01,
-      wallTxt.height
-    );
-
-    // fill the color and make the rectangle
-    //   p.stroke(wallColor);
-    //   p.fill(wallColor);
-    //   p.rect(i * STRIP_WIDTH, wallCenter, STRIP_WIDTH, height);
+    if (texture) {
+      // apply texture image
+      p.image(
+        wallTxt,
+        // x and y for the strip
+        i * STRIP_WIDTH,
+        wallCenter,
+        // width , height of texture to be applied
+        STRIP_WIDTH + 1,
+        height,
+        // x , y coordinates in texture image
+        textX,
+        0,
+        // width and height of txt to be samples
+        0.01,
+        wallTxt.height
+      );
+    } else {
+      // fill the color and make the rectangle
+      p.stroke(wallColor);
+      p.fill(wallColor);
+      p.rect(i * STRIP_WIDTH, wallCenter, STRIP_WIDTH, height);
+    }
   }
 }
 
@@ -237,6 +282,41 @@ export function sketchScene(p: p5) {
     }
   };
 
+  function drawSkyAndFloor() {
+    const numSteps = 360; // Number of steps for each half
+    const darkGray = p.color(82, 82, 82); // Approximately gray-700 in tailwind
+    const black = p.color(0, 0, 0); // Black
+    const lightGray = p.color(220, 220, 220); // Light gray for the floor
+
+    p.noStroke(); // Remove stroke
+
+    // Draw top half (dark gray to black)
+    for (let i = 0; i <= numSteps; i++) {
+      let inter = i / numSteps;
+      let shade = p.lerpColor(darkGray, black, inter);
+      p.fill(shade);
+      p.rect(
+        0,
+        (i * p.height) / (2 * numSteps) - 1,
+        p.width,
+        p.height / numSteps + 2
+      );
+    }
+
+    // Draw bottom half (light gray to dark gray)
+    for (let i = 0; i <= numSteps; i++) {
+      let inter = i / numSteps;
+      let shade = p.lerpColor(lightGray, darkGray, inter);
+      p.fill(shade);
+      p.rect(
+        0,
+        p.height - (i * p.height) / (2 * numSteps) - 1,
+        p.width,
+        p.height / numSteps + 2
+      );
+    }
+  }
+
   function drawskyandfloor() {
     p.push();
     p.fill(0);
@@ -246,10 +326,21 @@ export function sketchScene(p: p5) {
     p.pop();
   }
 
+  // p.windowResized = () => {
+  //   let width = window.innerWidth * 0.9;
+  //   let height = width;
+  //   if (window.innerHeight < height) {
+  //     width = height = window.innerHeight * 0.9;
+  //   }
+
+  //   p.resizeCanvas(width, height);
+  // };
+
   p.draw = () => {
     p.background(255);
 
-    drawskyandfloor();
+    // drawskyandfloor();
+    drawSkyAndFloor();
     // sky
     drawWalls(p);
 

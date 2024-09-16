@@ -1,5 +1,8 @@
 import p5 from "p5";
 
+// import class
+import { SmartNPC } from "../npc";
+
 // import types
 import { rayHitPoint, cellValueRange } from "../types";
 
@@ -15,7 +18,10 @@ import {
   ANGLE_STEP,
 } from "../constants";
 
+import { npc } from "./sketchScene";
+
 export let rayHitPoints: rayHitPoint[] = [];
+let bot = new SmartNPC(100, 75, 57, 0);
 
 let wallTextures: p5.Image[] = [];
 export function sketchMap(p: p5) {
@@ -40,6 +46,19 @@ export function sketchMap(p: p5) {
     }
   }
 
+  function drawBot() {
+    p.push();
+    p.fill("green");
+    p.strokeWeight(5);
+    p.fill("red");
+    p.translate(bot.x, bot.y);
+
+    p.rectMode("center");
+    p.rotate(bot.ang);
+    p.square(0, 0, TILE_SIZE * 0.4);
+    p.pop();
+  }
+
   function drawPlayer() {
     p.push();
 
@@ -50,6 +69,17 @@ export function sketchMap(p: p5) {
     p.rotate(PLAYER.angle);
     p.rect(0, 0, PLAYER.size, PLAYER.size);
 
+    p.pop();
+  }
+
+  function drawNpcs() {
+    p.push();
+    npc.forEach((element) => {
+      if (element.health > 0) {
+        p.fill("red");
+        p.circle(element.x, element.y, TILE_SIZE * 0.2);
+      }
+    });
     p.pop();
   }
 
@@ -88,12 +118,14 @@ export function sketchMap(p: p5) {
     let yc = p.cos(PLAYER.angle) * PLAYER.speed;
 
     if (p.keyIsDown(87)) {
+      bot.distance = 0;
       // w
       px += xc;
       py -= yc;
     }
 
     if (p.keyIsDown(83)) {
+      bot.distance = 0;
       // s
       px -= xc;
       py += yc;
@@ -117,11 +149,13 @@ export function sketchMap(p: p5) {
     }
 
     if (p.keyIsDown(68)) {
+      bot.distance = 0;
       // d
       PLAYER.angle += PLAYER.angleSpeed;
     }
 
     if (p.keyIsDown(65)) {
+      bot.distance = 0;
       // a
       PLAYER.angle -= PLAYER.angleSpeed;
     }
@@ -134,6 +168,8 @@ export function sketchMap(p: p5) {
     }
     return false;
   }
+
+  function castRayNpc() {}
 
   function castRay(angle: number) {
     let ang = PLAYER.angle + angle;
@@ -293,6 +329,9 @@ export function sketchMap(p: p5) {
 
     drawGrid();
     drawPlayer();
+    drawNpcs();
+    // drawBot();
+    // bot.castRay(p);
     playerControls();
 
     rayHitPoints = [];
